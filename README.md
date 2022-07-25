@@ -6,6 +6,8 @@ This is a simple tool to convert PDF files to CSV files with a simple GUI.
 The tool is based on the [PDF to CSV Converter](https://github.com/Asepsis/pdf_to_csv_converter). 
 Since this tool is just the [PDF to CSV Converter](https://github.com/Asepsis/pdf_to_csv_converter) with a GUI ontop, it has the same dependencies like the CLI version. 
 
+![](docs/images/pdf2csv_app.png)
+
 ### 🔃 Dependencies
 The main Branch will convert meldeergebnis from EasyWK to a CSV file.
 
@@ -56,9 +58,11 @@ This is pretty specific and only works propably with meldeergebnis from EasyWK.
 
 ## 📚 Documentation
 How to use the tool:
-Just enter the club name you want to look
-
+1. Just enter the club name you want to look up
+2. Select a file to convert to a csv file
+3. Press the convert button
 
 ## ⚙ Technical Details
 The Frontend is based on [Tauri](https://tauri.app/) with the [React](https://reactjs.org/) framework.
 The Backend is based on [Rust](https://www.rust-lang.org/).
+Preferences like the club name will be saved in a local storage. For example in windows it will be saved under: `C:\Users\Username\AppData\Roaming\PDF 2 CSV Converter\pdf2csv`
