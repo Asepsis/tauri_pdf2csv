@@ -4,8 +4,15 @@
 )]
 
 use pdf_extract::*;
+use preferences::{AppInfo, Preferences, PreferencesMap};
 use regex;
 use std::collections::HashMap;
+
+const APP_INFO: AppInfo = AppInfo {
+    name: "pdf2csv",
+    author: "PDF 2 CSV Converter",
+};
+
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 struct Swimmer {
@@ -38,14 +45,32 @@ struct Competition {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![process_file])
+        .invoke_handler(tauri::generate_handler![process_file, load_preferences])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
+fn load_preferences() -> String {
+    let pref_key = "config";
+    let load_prefs = PreferencesMap::<String>::load(&APP_INFO, &pref_key);
+    // Check if the preferences exists
+    if load_prefs.is_ok() {
+        let preferences = load_prefs.unwrap();
+        let club_name = preferences.get("club_name").unwrap();
+        return club_name.to_string();
+    } else {
+        return "".to_string();
+    }
+}
+
+#[tauri::command]
 fn process_file(filepath: String, clubname: String) -> String {
-    // println!("{}", filepath);
+    // Save clubname as preferences
+    let pref_key = "config";
+    let mut preferences: PreferencesMap<String> = PreferencesMap::new();
+    preferences.insert("club_name".into(), clubname.clone().into());
+    let _save_prefs = preferences.save(&APP_INFO, &pref_key);
 
     // Read the file
     let content = load_file(&filepath);
@@ -73,8 +98,10 @@ fn process_file(filepath: String, clubname: String) -> String {
 }
 
 /// Loads the file from the given path into a string
-/// # Argumennt is the filepath as &str
-/// # Output is the content of the file as String
+/// ### Argumennt
+/// filepath as &str
+/// ### Output
+/// Content of the file as String
 fn load_file(filepath: &str) -> String {
     //File handling
     let content = match extract_text(&filepath) {
@@ -91,16 +118,21 @@ fn load_file(filepath: &str) -> String {
 }
 
 /// Takes a Vector from Competition and saves a formated .csv file in the root folder
-/// # Arguments is a Vec<Comp>
-/// # Output wk.csv
-fn convert_to_csv(wk: Vec<Competition>, output_name: &str) {
+/// ### Arguments
+/// 1st: Vec<Competition>: Is a vector which contains all wanted competitions
+///
+/// 2nd: &str: Is the path including the filename of the output file (C:\Users\...\filename.csv)
+///
+/// ### Output
+/// The output will be saved in a csv (C:\Users\...\filename.csv)
+fn convert_to_csv(comp: Vec<Competition>, output_name: &str) {
     let mut csv_string = String::new();
     csv_string
       .push_str("WK;Uhrzeit;Lauf;Bahn;Name;Jahrgang;Verein;Zeit;Split 1;Split 2;Split 3;Split 4;Split 5;Split 6;Split 7;Split 8;\n");
-    for w in wk {
-        for l in w.run_list {
+    for c in comp {
+        for l in c.run_list {
             for b in l.lane_list {
-                csv_string.push_str(&w.competition);
+                csv_string.push_str(&c.competition);
                 csv_string.push_str(";");
                 csv_string.push_str(&l.time);
                 csv_string.push_str(";");
@@ -122,6 +154,17 @@ fn convert_to_csv(wk: Vec<Competition>, output_name: &str) {
     std::fs::write(output_name, csv_string).unwrap();
 }
 
+/// Takes a String reference with the content of the pdf file and a String reference with the name of the club
+/// It searchs the &content for all swimmers with the given &club_name and returns a all Competitions in a Vector
+/// If the &club_name is empty, all swimmers are returned
+///
+/// ### Arguments are:
+/// 1st String reference with the content of the pdf file
+///
+/// 2nd String reference with the name of the club
+///
+/// ### Output
+/// The output is a of Competitions Vector<Competition>
 fn process_content(content: &str, club_name: &str) -> Vec<Competition> {
     //Find all Wettkampf and there positions in the text
     let re_comp =
@@ -172,7 +215,8 @@ fn process_content(content: &str, club_name: &str) -> Vec<Competition> {
             time: cap_lane[5].to_string(),
             byte_offset: cap_lane.get(0).unwrap().start(),
         };
-
+        //Add swimmer to Vector if swimmer.club is equal to club_name
+        //If club_name is empty, add all swimmers
         if lane.swimmer.club == club_name.to_string() {
             swimmer_list.insert(cap_lane[2].trim_end().to_string(), new_swimmer);
             lane_list.push(lane);

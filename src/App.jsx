@@ -2,7 +2,7 @@ import pdf2csvLogo from './assets/pdf2csv.svg'
 import './App.css'
 import { open } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function App() {
 
@@ -31,17 +31,17 @@ function App() {
   async function call_rust(e) {
     e.preventDefault()
     if (filePath === 'No file selected' || filePath === 'Please select a file!') {
-      setFilePath('Please select a file!');
+      setFilePath('Please select a file!')
     } else {
       setButtonDisabled(true)
-      setButtonText('Processing...');
+      setButtonText('Processing...')
       await invoke('process_file', {
         filepath: filePath,
         clubname: clubName
       }).then(msg => {
-        console.log(msg === "Converted successfully");
-        setButtonText(msg);
-        setButtonDisabled(false);
+        console.log(msg === "Converted successfully")
+        setButtonText(msg)
+        setButtonDisabled(false)
       });
     }
   }
@@ -50,6 +50,19 @@ function App() {
     setClubName(e.target.value)
     setButtonText('Convert')
   }
+
+  useEffect(() => {
+    function loadPreferences() {
+      const preferences = invoke('load_preferences')
+      console.log("Pref ", preferences.then(result => {
+        setClubName(result)
+        console.log('setClubName to: ', result)
+      }))
+    }
+
+    loadPreferences()
+    // console.log("useEffect ran...");
+  }, [])
 
   return (
     <div className="App">
@@ -60,19 +73,19 @@ function App() {
       <div className="card">
         <form onSubmit={call_rust}>
           <div className="information">
-            <label>Club Name</label>
-            <input type="text" placeholder="Please insert club name" onChange={handleClubChange} required />
+            <label>*Club Name</label>
+            <input type="text" placeholder="Please insert club name" onChange={handleClubChange} value={clubName} required />
           </div>
           <div className="information">
-            <label>{filePath}</label>
+            <label>*{filePath}</label>
             <button onClick={openFileDialog}>Select File</button>
           </div>
           <div>
             <button type="submit" disabled={buttonDisabled}>{buttonText}</button>
           </div>
         </form>
-      </div >
-    </div >
+      </div>
+    </div>
   )
 }
 
