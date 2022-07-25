@@ -1,6 +1,6 @@
-# 🏊‍♂️ PDF 2 CSV Converter 
+# 🏊‍♂️ GUI: PDF 2 CSV Converter 
 _This tool is experimental and not yet finished._
-
+_This pdf 2 csv converter has a graphical user interface to improve the user expierience_
 ## 📝 Description
 This is a simple tool to convert PDF files to CSV files with a simple GUI.
 The tool is based on the [PDF to CSV Converter](https://github.com/Asepsis/pdf_to_csv_converter). 
@@ -65,4 +65,4 @@ How to use the tool:
 ## ⚙ Technical Details
 The Frontend is based on [Tauri](https://tauri.app/) with the [React](https://reactjs.org/) framework.
 The Backend is based on [Rust](https://www.rust-lang.org/).
-Preferences like the club name will be saved in a local storage. For example in windows it will be saved under: `C:\Users\Username\AppData\Roaming\PDF 2 CSV Converter\pdf2csv`
+Preferences like the club name will be saved in local storage. For example in windows it will be saved under: `C:\Users\Username\AppData\Roaming\PDF 2 CSV Converter\pdf2csv`
