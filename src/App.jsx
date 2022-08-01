@@ -8,7 +8,7 @@ function App() {
   return (
     <div className="App">
       <Header />
-      <Menu />
+      {/* <Menu /> */}
       <Converter />
     </div>
   )
